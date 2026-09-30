@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/6 515 鐵人三項訓練協調表 (CSV校正版)</title>
+    <title>12/6 515 鐵人三項訓練協調表 (支援自訂時長)</title>
     <style>
         :root {
-            --swim-color: #3b82f6;
-            --bike-color: #10b981;
-            --run-color: #ef4444;
+            --swim-color: rgba(59, 130, 246, 0.95);
+            --bike-color: rgba(16, 185, 129, 0.95);
+            --run-color: rgba(239, 68, 68, 0.95);
             --bg-color: #f3f4f6;
             --course-bg: #fdf6e3;
             --exam-bg: #ffe4e6;
@@ -22,50 +22,58 @@
         .nav-btn { cursor: pointer; padding: 5px 15px; border: none; background: #e5e7eb; border-radius: 5px; font-weight: bold;}
         .nav-btn:hover { background: #d1d5db; }
         
-        .stats { display: flex; gap: 15px; font-weight: bold; }
-        .stat-item { padding: 5px 10px; border-radius: 20px; color: white; font-size: 0.9rem;}
-        .stat-swim { background: var(--swim-color); }
-        .stat-bike { background: var(--bike-color); }
-        .stat-run { background: var(--run-color); }
+        .stats { display: flex; gap: 10px; font-weight: bold; flex-wrap: wrap; justify-content: center;}
+        .stat-item { padding: 5px 10px; border-radius: 20px; color: white; font-size: 0.85rem;}
+        .stat-swim { background: #3b82f6; }
+        .stat-bike { background: #10b981; }
+        .stat-run { background: #ef4444; }
 
         .user-info { font-weight: bold; color: #4b5563; }
         .switch-user { cursor: pointer; color: #3b82f6; text-decoration: underline; font-size: 0.85rem; margin-left: 10px;}
 
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto;}
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { border: 1px solid #e5e7eb; padding: 6px; text-align: center; vertical-align: top; width: 12.5%; position: relative;}
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; padding-bottom: 50px;}
+        table { width: 100%; border-collapse: collapse; min-width: 800px; table-layout: fixed;}
+        th, td { border: 1px solid #e5e7eb; padding: 4px; text-align: center; vertical-align: top; }
         th { background-color: #f9fafb; font-weight: 600; color: #4b5563; }
         .time-col { background-color: #f9fafb; font-weight: bold; vertical-align: middle; width: 10%; }
         
-        td.interactive { cursor: pointer; min-height: 50px; height: 50px; transition: background 0.2s; }
+        /* 設定固定高度，讓絕對定位可以準確覆蓋 */
+        td.interactive { cursor: pointer; height: 65px; position: relative; padding: 2px; box-sizing: border-box; }
         td.interactive:hover { background-color: #f3f4f6; }
 
         .course-block { background-color: var(--course-bg); font-size: 0.75rem; color: #4b5563; padding: 4px; border-radius: 4px; margin-bottom: 2px; }
         .holiday-block { background-color: var(--holiday-bg); color: #b91c1c; font-weight: bold; font-size: 0.8rem;}
         .exam-block { background-color: var(--exam-bg); color: #9f1239; font-weight: bold; font-size: 0.8rem;}
 
+        /* 自訂時長訓練區塊 (絕對定位) */
         .training-plan { 
-            display: block; width: 90%; margin: 2px auto; padding: 4px; border-radius: 4px; color: white; 
-            font-weight: bold; font-size: 0.8rem; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 10; position: relative;
+            position: absolute; top: 2px; left: 2px; width: calc(100% - 4px);
+            padding: 4px; border-radius: 6px; color: white; 
+            font-weight: bold; font-size: 0.8rem; box-shadow: 0 3px 6px rgba(0,0,0,0.3); 
+            z-index: 20; box-sizing: border-box; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center;
         }
+        .training-plan:hover { transform: scale(1.02); z-index: 30; }
         .training-plan.swim { background-color: var(--swim-color); }
         .training-plan.bike { background-color: var(--bike-color); }
         .training-plan.run { background-color: var(--run-color); }
-        .status-proposed { border: 2px dashed #fff; opacity: 0.9; }
+        .status-proposed { border: 2px dashed #fff; backdrop-filter: blur(2px); }
         .status-confirmed { border: 2px solid #fff; }
 
         /* Modal Styles */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;}
-        .modal { background: white; padding: 20px; border-radius: 8px; width: 300px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-        .modal h3 { margin-top: 0; }
+        .modal { background: white; padding: 20px; border-radius: 8px; width: 320px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
+        .modal h3 { margin-top: 0; color: #1f2937;}
         .modal-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
-        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white;}
-        .btn-swim { background: var(--swim-color); }
-        .btn-bike { background: var(--bike-color); }
-        .btn-run { background: var(--run-color); }
+        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; font-size: 0.95rem;}
+        .btn-swim { background: #3b82f6; }
+        .btn-bike { background: #10b981; }
+        .btn-run { background: #ef4444; }
         .btn-agree { background: #10b981; }
         .btn-disagree { background: #ef4444; }
         .btn-cancel { background: #9ca3af; }
+
+        .duration-select { width: 100%; padding: 10px; margin-top: 8px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -78,18 +86,19 @@
                 目前使用者：<span id="display-user" style="color: #2563eb; font-size: 1.1rem;"></span>
                 <span class="switch-user" onclick="switchUser()">[切換使用者]</span>
             </div>
-            <div class="stats">
-                <div class="stat-item stat-swim" id="stat-swim">🏊 游泳: 0</div>
-                <div class="stat-item stat-bike" id="stat-bike">🚴 騎車: 0</div>
-                <div class="stat-item stat-run" id="stat-run">🏃 跑步: 0</div>
-            </div>
         </div>
-
-        <div class="toolbar" style="justify-content: center;">
+        
+        <!-- 統計數據 -->
+        <div class="stats" style="width: 100%; max-width: 1000px; justify-content: space-between;">
             <div class="week-nav">
                 <button class="nav-btn" onclick="changeWeek(-1)">◀ 上一週</button>
-                <span id="week-display">第 4 週 (09/28 - 10/04)</span>
+                <span id="week-display" style="color: #374151;">第 4 週 (09/28 - 10/04)</span>
                 <button class="nav-btn" onclick="changeWeek(1)">下一週 ▶</button>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="stat-item stat-swim" id="stat-swim">🏊 游泳: 0次 (0h)</div>
+                <div class="stat-item stat-bike" id="stat-bike">🚴 騎車: 0次 (0h)</div>
+                <div class="stat-item stat-run" id="stat-run">🏃 跑步: 0次 (0h)</div>
             </div>
         </div>
     </div>
@@ -112,7 +121,21 @@
     <div class="modal-overlay" id="action-modal">
         <div class="modal">
             <h3 id="modal-title">安排訓練</h3>
-            <p id="modal-desc" style="font-size: 0.9rem; color: #4b5563;"></p>
+            <p id="modal-desc" style="font-size: 0.9rem; color: #4b5563; margin-bottom: 5px;"></p>
+            
+            <div id="duration-container" style="text-align: left; margin: 15px 0;">
+                <label for="plan-duration" style="font-size: 0.9rem; font-weight: bold; color: #374151;">⏱️ 預計訓練時長：</label>
+                <select id="plan-duration" class="duration-select">
+                    <option value="1">1 小時</option>
+                    <option value="1.5">1.5 小時</option>
+                    <option value="2">2 小時</option>
+                    <option value="2.5">2.5 小時</option>
+                    <option value="3">3 小時</option>
+                    <option value="3.5">3.5 小時</option>
+                    <option value="4">4 小時</option>
+                </select>
+            </div>
+
             <div class="modal-btns" id="modal-actions">
                 <!-- 動態生成按鈕 -->
             </div>
@@ -127,7 +150,7 @@
             12: "11/23 - 11/29", 13: "11/30 - 12/06"
         };
 
-        // 以共筆排班 CSV 為絕對標準的課程資料 [day, timeStart, timeEnd, name, type]
+        // CSV 共筆排班標準課程資料 [day, timeStart, timeEnd, name, type]
         const courses = {
             4: [[1, 8, 8, "教師節放假", "holiday"], [2, 8, 8, "模組4A區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [4, 10, 10, "社區醫學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "社區醫學", "course"], [5, 11, 11, "環境與職業醫學", "course"], [4, 13, 13, "新陳代謝", "course"], [5, 13, 13, "臨床診斷學", "course"], [4, 14, 14, "新陳代謝", "course"], [5, 14, 14, "臨床技能", "course"], [3, 15, 16, "呼吸學", "course"], [4, 15, 16, "新陳代謝", "course"], [5, 15, 15, "臨床技能", "course"]], 
             5: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 8, "國慶調整放假", "holiday"], [2, 10, 11, "呼吸學", "course"], [3, 10, 10, "新陳代謝", "course"], [3, 11, 11, "社區醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "呼吸學", "course"]], 
@@ -141,7 +164,6 @@
             13: [[1, 8, 11, "精神科學", "course"], [2, 8, 9, "臨床診斷學", "course"], [3, 8, 9, "精神科學", "course"], [4, 9, 10, "復健醫學", "course"], [5, 8, 9, "神經學", "course"], [2, 10, 11, "精神科學", "course"], [3, 10, 11, "神經學", "course"], [4, 11, 11, "環境與職業醫學", "course"], [5, 10, 11, "PBL", "course"], [2, 13, 14, "急診醫學", "course"], [3, 13, 14, "神經學", "course"], [4, 13, 14, "神經學", "course"], [5, 13, 14, "神經學", "course"], [2, 15, 16, "神經學", "course"], [3, 15, 16, "精神科學", "course"], [4, 15, 15, "預防醫學", "course"], [4, 16, 16, "課程", "course"]]
         };
 
-        // 狀態管理
         let currentWeek = 4;
         let currentUser = localStorage.getItem('triathlon_user') || "";
         if (!currentUser) {
@@ -150,27 +172,24 @@
         }
         document.getElementById('display-user').innerText = currentUser;
 
-        // 讀取訓練計畫: { "week_day_time": { type, proposedBy, status } }
-        let plans = JSON.parse(localStorage.getItem('triathlon_plans_v2')) || {};
+        // 讀取訓練計畫: { "week_day_time": { type, proposedBy, status, duration } }
+        let plans = JSON.parse(localStorage.getItem('triathlon_plans_v3')) || {};
 
-        // 初始化
         function init() {
             renderTable();
             updateStats();
         }
 
-        // 切換使用者 (模擬多用戶互動)
         function switchUser() {
             let newUser = prompt("請輸入切換後的名字：", currentUser);
             if (newUser) {
                 currentUser = newUser;
                 localStorage.setItem('triathlon_user', currentUser);
                 document.getElementById('display-user').innerText = currentUser;
-                renderTable(); // 重新渲染以更新按鈕狀態
+                renderTable(); 
             }
         }
 
-        // 切換週次
         function changeWeek(delta) {
             let newWeek = currentWeek + delta;
             if (newWeek >= 4 && newWeek <= 13) {
@@ -182,12 +201,10 @@
             }
         }
 
-        // 渲染課表
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             
-            // 處理當週課程資料轉換為容易查詢的格式
             const weekCourses = {};
             if (courses[currentWeek]) {
                 courses[currentWeek].forEach(c => {
@@ -197,11 +214,9 @@
                 });
             }
 
-            // 產生 08:00 到 19:00 (含午休 12:00) 的網格
             for (let time = 8; time <= 19; time++) {
                 const tr = document.createElement('tr');
                 
-                // 時間標籤
                 const th = document.createElement('td');
                 th.className = 'time-col';
                 if (time === 12) {
@@ -211,13 +226,12 @@
                 }
                 tr.appendChild(th);
 
-                // 星期一到星期日
                 for (let day = 1; day <= 7; day++) {
                     const td = document.createElement('td');
                     td.className = 'interactive';
                     const key = `${currentWeek}_${day}_${time}`;
                     
-                    // 1. 填入課程
+                    // 填入背景課程
                     if (day <= 5 && weekCourses[`${day}_${time}`]) {
                         const course = weekCourses[`${day}_${time}`];
                         let div = document.createElement('div');
@@ -228,19 +242,28 @@
                         td.appendChild(div);
                     }
 
-                    // 2. 填入訓練計畫
+                    // 填入訓練計畫 (運用絕對定位與 duration 計算高度)
                     if (plans[key]) {
                         const plan = plans[key];
+                        const duration = plan.duration || 1; 
                         let div = document.createElement('div');
+                        
                         let typeIcon = plan.type === 'swim' ? '🏊' : (plan.type === 'bike' ? '🚴' : '🏃');
-                        let statusText = plan.status === 'confirmed' ? '(已確認)' : `(待確認:${plan.proposedBy})`;
+                        let typeName = plan.type === 'swim' ? '游泳' : (plan.type === 'bike' ? '騎車' : '跑步');
+                        let statusText = plan.status === 'confirmed' ? '(已確認)' : `(待確認: ${plan.proposedBy})`;
                         
                         div.className = `training-plan ${plan.type} status-${plan.status}`;
-                        div.innerHTML = `${typeIcon} ${plan.type === 'swim'?'游泳':plan.type==='bike'?'騎車':'跑步'}<br><span style="font-size:0.6rem">${statusText}</span>`;
+                        
+                        // 計算高度：1格(1小時)約佔 100%，跨越多格時還要加上格線的粗細差
+                        // css calc(100% * duration + borders)
+                        div.style.height = `calc(${duration * 100}% + ${Math.floor(duration - 1)}px - 4px)`;
+                        
+                        div.innerHTML = `<span>${typeIcon} ${typeName} (${duration}h)</span>
+                                         <span style="font-size:0.65rem; margin-top:2px; font-weight:normal;">${statusText}</span>`;
                         td.appendChild(div);
                     }
 
-                    // 綁定點擊事件
+                    // 綁定點擊事件。即使被跨格區塊覆蓋上方，點擊該區塊依然會觸發原生 td 的事件。
                     td.onclick = () => handleCellClick(day, time, plans[key]);
                     tr.appendChild(td);
                 }
@@ -248,37 +271,52 @@
             }
         }
 
-        // 更新統計數據
         function updateStats() {
-            let swim = 0, bike = 0, run = 0;
+            let sCount = 0, bCount = 0, rCount = 0;
+            let sHour = 0, bHour = 0, rHour = 0;
+            
             for (let key in plans) {
-                if (plans[key].type === 'swim') swim++;
-                if (plans[key].type === 'bike') bike++;
-                if (plans[key].type === 'run') run++;
+                let dur = plans[key].duration || 1;
+                if (plans[key].type === 'swim') { sCount++; sHour += dur; }
+                if (plans[key].type === 'bike') { bCount++; bHour += dur; }
+                if (plans[key].type === 'run') { rCount++; rHour += dur; }
             }
-            document.getElementById('stat-swim').innerText = `🏊 游泳: ${swim} 次`;
-            document.getElementById('stat-bike').innerText = `🚴 騎車: ${bike} 次`;
-            document.getElementById('stat-run').innerText = `🏃 跑步: ${run} 次`;
+            
+            document.getElementById('stat-swim').innerText = `🏊 游泳: ${sCount}次 (${sHour}h)`;
+            document.getElementById('stat-bike').innerText = `🚴 騎車: ${bCount}次 (${bHour}h)`;
+            document.getElementById('stat-run').innerText = `🏃 跑步: ${rCount}次 (${rHour}h)`;
         }
 
-        // 處理格子點擊與協商邏輯
+        // 小工具：將十進位時間轉為文字 (例如 9.5 -> "09:30")
+        function formatTimeText(decimalTime) {
+            let h = Math.floor(decimalTime);
+            let m = (decimalTime % 1) !== 0 ? "30" : "00";
+            return `${h.toString().padStart(2, '0')}:${m}`;
+        }
+
         let currentTargetKey = null;
+        let currentTargetTime = null;
 
         function handleCellClick(day, time, existingPlan) {
             const dayNames = ["", "一", "二", "三", "四", "五", "六", "日"];
             currentTargetKey = `${currentWeek}_${day}_${time}`;
-            const timeStr = `${time}:00`;
+            currentTargetTime = time;
+            
+            const timeStr = `${time.toString().padStart(2, '0')}:00`;
 
             const modal = document.getElementById('action-modal');
             const title = document.getElementById('modal-title');
             const desc = document.getElementById('modal-desc');
             const btns = document.getElementById('modal-actions');
-            btns.innerHTML = ''; // 清空按鈕
+            const durationContainer = document.getElementById('duration-container');
+            
+            btns.innerHTML = ''; 
 
             if (!existingPlan) {
-                // 空白時段：新增提議
+                // 新增
                 title.innerText = `安排訓練 (${dayNames[day]} ${timeStr})`;
                 desc.innerText = "請選擇你要提議的訓練項目：";
+                durationContainer.style.display = 'block'; // 顯示時長選單
                 
                 btns.innerHTML = `
                     <button class="btn btn-swim" onclick="savePlan('swim', 'proposed')">🏊 安排游泳</button>
@@ -287,20 +325,24 @@
                     <button class="btn btn-cancel" onclick="closeModal()">取消</button>
                 `;
             } else {
-                // 已有計畫：審核或取消
-                title.innerText = `訓練協商 (${dayNames[day]} ${timeStr})`;
+                // 審核或編輯既有計畫
+                durationContainer.style.display = 'none'; // 隱藏時長選單
+                
+                let dur = existingPlan.duration || 1;
+                let endTimeStr = formatTimeText(time + dur);
+                
+                title.innerText = `訓練協商 (${dayNames[day]} ${timeStr}~${endTimeStr})`;
                 
                 if (existingPlan.status === 'confirmed') {
-                    desc.innerText = `此時段已由 ${existingPlan.proposedBy} 與大家確認為訓練時間。`;
+                    desc.innerText = `此時段已由 ${existingPlan.proposedBy} 與大家確認為訓練時間 (共 ${dur} 小時)。`;
                     btns.innerHTML = `<button class="btn btn-cancel" onclick="deletePlan()">取消此訓練</button>
                                       <button class="btn btn-cancel" style="background:#e5e7eb; color:#333;" onclick="closeModal()">關閉</button>`;
                 } else if (existingPlan.proposedBy === currentUser) {
-                    desc.innerText = `這是你提議的訓練，等待對方同意中...`;
+                    desc.innerText = `這是你提議的 ${dur} 小時訓練，等待對方同意中...`;
                     btns.innerHTML = `<button class="btn btn-cancel" onclick="deletePlan()">撤回提議</button>
                                       <button class="btn btn-cancel" style="background:#e5e7eb; color:#333;" onclick="closeModal()">關閉</button>`;
                 } else {
-                    // 對方提議的，可以同意或拒絕
-                    desc.innerText = `${existingPlan.proposedBy} 提議在這個時段訓練。你同意嗎？\n(若不同意，請點擊不同意後，在課表上選擇新時段)`;
+                    desc.innerText = `${existingPlan.proposedBy} 提議在這裡訓練 ${dur} 小時。\n你同意嗎？(若不同意，請退回並重選)`;
                     btns.innerHTML = `
                         <button class="btn btn-agree" onclick="savePlan('${existingPlan.type}', 'confirmed')">✅ 同意</button>
                         <button class="btn btn-disagree" onclick="rejectPlan()">❌ 不同意 (取消並重選)</button>
@@ -311,18 +353,26 @@
             modal.style.display = 'flex';
         }
 
-        // 儲存或更新計畫
         function savePlan(type, status) {
+            let dur = 1;
+            if (status === 'proposed') {
+                // 抓取下拉選單的值
+                dur = parseFloat(document.getElementById('plan-duration').value);
+            } else if (plans[currentTargetKey]) {
+                // 同意時保留原本設定的時長
+                dur = plans[currentTargetKey].duration;
+            }
+
             plans[currentTargetKey] = {
                 type: type,
                 proposedBy: currentUser,
-                status: status
+                status: status,
+                duration: dur
             };
             syncData();
             closeModal();
         }
 
-        // 刪除計畫
         function deletePlan() {
             if(confirm('確定要移除此訓練嗎？')) {
                 delete plans[currentTargetKey];
@@ -331,7 +381,6 @@
             }
         }
 
-        // 拒絕計畫
         function rejectPlan() {
             alert("已拒絕該提議。請在課表上點擊您希望的新時段來發起新提議！");
             delete plans[currentTargetKey];
@@ -339,9 +388,9 @@
             closeModal();
         }
 
-        // 同步資料並更新 UI
         function syncData() {
-            localStorage.setItem('triathlon_plans_v2', JSON.stringify(plans));
+            // 使用 v3 區隔之前的存檔，以免資料格式衝突
+            localStorage.setItem('triathlon_plans_v3', JSON.stringify(plans));
             renderTable();
             updateStats();
         }
@@ -350,7 +399,7 @@
             document.getElementById('action-modal').style.display = 'none';
         }
 
-        // 啟動應用程式
+        // 啟動
         init();
     </script>
 </body>
