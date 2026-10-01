@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/6 515 鐵人三項訓練協調表 (RWD自適應版)</title>
+    <title>12/6 515 鐵人三項訓練協調表 (當週統計版)</title>
     
     <!-- 引入 Firebase 雲端資料庫 SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
@@ -67,14 +67,12 @@
         .status-confirmed { border: 2px solid #fff; }
 
         /* RWD 自動適應邏輯 (螢幕寬度控制) */
-        /* 電腦 / 平板檢視 (螢幕寬度 >= 768px) */
         @media (min-width: 768px) {
             .mobile-only-header { display: none !important; }
             .time-col { width: 10%; }
             .day-col { display: table-cell !important; }
         }
 
-        /* 手機直向檢視 (螢幕寬度 < 768px) */
         @media (max-width: 767px) {
             .desktop-only-header { display: none !important; }
             .time-col { width: 22%; }
@@ -100,7 +98,7 @@
     <div id="toast-container"></div>
 
     <div class="header">
-        <h2 style="font-size: 1.2rem; margin: 5px 0;">🏃‍♂️️ 12/6 515 鐵人三項訓練協調表</h2>
+        <h2 style="font-size: 1.2rem; margin: 5px 0;">🏃‍♂️ 12/6 515 鐵人三項訓練協調表</h2>
         
         <div class="toolbar">
             <div class="user-info">
@@ -112,7 +110,7 @@
             </div>
         </div>
         
-        <!-- 統計數據 -->
+        <!-- 當週統計數據 -->
         <div class="stats">
             <div class="stat-item stat-swim" id="stat-swim">🏊 0次(0h)</div>
             <div class="stat-item stat-bike" id="stat-bike">🚴 0次(0h)</div>
@@ -254,6 +252,7 @@
             if (newWeek >= 4 && newWeek <= 13) {
                 currentWeek = newWeek;
                 renderTable();
+                updateStats(); // 切換週次時更新統計
             }
         }
 
@@ -267,21 +266,18 @@
                 if (currentWeek > 4) currentWeek--;
             }
             renderTable();
+            updateStats(); // 切換日期時同步更新統計
         }
 
         function renderTable() {
             const weekInfo = weeksData[currentWeek];
             
-            // 更新標題
             document.getElementById('desktop-week-title').innerText = weekInfo.label;
             document.getElementById('mobile-date-title').innerText = `${weekInfo.label.split(' ')[0]} - ${weekInfo.dates[currentDay - 1]}`;
 
-            // 更新標頭中的全週日期
             for (let d = 1; d <= 7; d++) {
                 const th = document.getElementById(`th-${d}`);
                 th.innerText = weekInfo.dates[d - 1];
-                
-                // 控制手機版時僅顯示目前選擇的日期欄位
                 if (d === currentDay) {
                     th.classList.add('active-day');
                 } else {
@@ -342,18 +338,23 @@
             }
         }
 
+        // 當週獨立統計邏輯
         function updateStats() {
             let sCount = 0, bCount = 0, rCount = 0;
             let sHour = 0, bHour = 0, rHour = 0;
+            
+            // 僅篩選 key 開頭為目前 currentWeek 的資料
             for (let key in plans) {
-                let dur = plans[key].duration || 1;
-                if (plans[key].type === 'swim') { sCount++; sHour += dur; }
-                if (plans[key].type === 'bike') { bCount++; bHour += dur; }
-                if (plans[key].type === 'run') { rCount++; rHour += dur; }
+                if (key.startsWith(`${currentWeek}_`)) {
+                    let dur = plans[key].duration || 1;
+                    if (plans[key].type === 'swim') { sCount++; sHour += dur; }
+                    if (plans[key].type === 'bike') { bCount++; bHour += dur; }
+                    if (plans[key].type === 'run') { rCount++; rHour += dur; }
+                }
             }
-            document.getElementById('stat-swim').innerText = `🏊 ${sCount}次(${sHour}h)`;
-            document.getElementById('stat-bike').innerText = `🚴 ${bCount}次(${bHour}h)`;
-            document.getElementById('stat-run').innerText = `🏃 ${rCount}次(${rHour}h)`;
+            document.getElementById('stat-swim').innerText = `🏊 游泳: ${sCount}次 (${sHour}h)`;
+            document.getElementById('stat-bike').innerText = `🚴 騎車: ${bCount}次 (${bHour}h)`;
+            document.getElementById('stat-run').innerText = `🏃 跑步: ${rCount}次 (${rHour}h)`;
         }
 
         let currentTargetKey = null;
