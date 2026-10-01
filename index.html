@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/6 515 鐵人三項訓練協調表 (即時通知版)</title>
+    <title>12/6 515 鐵人三項訓練協調表 (RWD自適應版)</title>
     
     <!-- 引入 Firebase 雲端資料庫 SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
@@ -20,95 +20,117 @@
             --holiday-bg: #fee2e2;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 10px; color: #333; }
-        .header { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; }
+        
+        .header { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 12px; }
         .toolbar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1000px; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box;}
         
-        .week-nav { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1rem;}
-        .nav-btn { cursor: pointer; padding: 5px 15px; border: none; background: #e5e7eb; border-radius: 5px; font-weight: bold;}
+        /* 導覽列 */
+        .nav-group { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1000px; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; font-weight: bold;}
+        .nav-btn { cursor: pointer; padding: 6px 14px; border: none; background: #e5e7eb; border-radius: 6px; font-weight: bold; font-size: 0.9rem;}
+        .nav-btn:hover { background: #d1d5db; }
         
-        .stats { display: flex; gap: 10px; font-weight: bold; flex-wrap: wrap; justify-content: center;}
-        .stat-item { padding: 5px 10px; border-radius: 20px; color: white; font-size: 0.85rem;}
-        .stat-swim { background: #3b82f6; }
-        .stat-bike { background: #10b981; }
-        .stat-run { background: #ef4444; }
+        /* 統計區 */
+        .stats { display: flex; gap: 8px; font-weight: bold; width: 100%; max-width: 1000px; justify-content: space-around; box-sizing: border-box;}
+        .stat-item { padding: 6px 12px; border-radius: 20px; color: white; font-size: 0.85rem; flex: 1; text-align: center;}
+        .stat-swim { background: #3b82f6; } .stat-bike { background: #10b981; } .stat-run { background: #ef4444; }
 
-        .user-info { font-weight: bold; color: #4b5563; display: flex; align-items: center; gap: 10px;}
+        .user-info { font-weight: bold; color: #4b5563; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;}
         .switch-user { cursor: pointer; color: #3b82f6; text-decoration: underline; font-size: 0.85rem;}
         
-        /* 通知鈴鐺樣式 */
-        .bell-container { position: relative; cursor: pointer; font-size: 1.5rem; }
-        .badge { position: absolute; top: -5px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; display: none;}
+        /* 小鈴鐺與通知 */
+        .bell-container { position: relative; cursor: pointer; font-size: 1.4rem; }
+        .badge { position: absolute; top: -5px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.65rem; font-weight: bold; display: none;}
         
-        /* Toast 彈出提示樣式 */
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px;}
-        .toast { background: #1f2937; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.9rem; font-weight: bold; animation: slideDown 0.3s ease-out; opacity: 0.95;}
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 0.95; } }
+        #toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;}
+        .toast { background: #1f2937; color: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: bold; text-align: center; opacity: 0.95;}
 
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; padding-bottom: 50px;}
-        table { width: 100%; border-collapse: collapse; min-width: 800px; table-layout: fixed;}
-        th, td { border: 1px solid #e5e7eb; padding: 4px; text-align: center; vertical-align: top; }
-        th { background-color: #f9fafb; font-weight: 600; color: #4b5563; }
-        .time-col { background-color: #f9fafb; font-weight: bold; vertical-align: middle; width: 10%; }
+        /* 表格結構 */
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; overflow: hidden; padding-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; table-layout: fixed;}
+        th, td { border: 1px solid #e5e7eb; padding: 6px; text-align: center; vertical-align: top; }
+        th { background-color: #f9fafb; font-weight: 600; color: #4b5563; font-size: 0.9rem;}
+        .time-col { background-color: #f9fafb; font-weight: bold; vertical-align: middle; font-size: 0.8rem;}
         
-        td.interactive { cursor: pointer; height: 65px; position: relative; padding: 2px; box-sizing: border-box; }
+        td.interactive { cursor: pointer; height: 60px; position: relative; padding: 2px; box-sizing: border-box; }
         td.interactive:hover { background-color: #f3f4f6; }
 
-        .course-block { background-color: var(--course-bg); font-size: 0.75rem; color: #4b5563; padding: 4px; border-radius: 4px; margin-bottom: 2px; }
-        .holiday-block { background-color: var(--holiday-bg); color: #b91c1c; font-weight: bold; font-size: 0.8rem;}
-        .exam-block { background-color: var(--exam-bg); color: #9f1239; font-weight: bold; font-size: 0.8rem;}
+        .course-block { background-color: var(--course-bg); font-size: 0.75rem; color: #4b5563; padding: 4px; border-radius: 4px; margin-bottom: 2px; text-align: left;}
+        .holiday-block { background-color: var(--holiday-bg); color: #b91c1c; font-weight: bold; text-align: center;}
+        .exam-block { background-color: var(--exam-bg); color: #9f1239; font-weight: bold; text-align: center;}
 
-        .training-plan { position: absolute; top: 2px; left: 2px; width: calc(100% - 4px); padding: 4px; border-radius: 6px; color: white; font-weight: bold; font-size: 0.8rem; box-shadow: 0 3px 6px rgba(0,0,0,0.3); z-index: 20; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; justify-content: center;}
+        /* 訓練塊 */
+        .training-plan { position: absolute; top: 2px; left: 2px; width: calc(100% - 4px); padding: 4px; border-radius: 6px; color: white; font-weight: bold; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 20; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; justify-content: center;}
         .training-plan.swim { background-color: var(--swim-color); }
         .training-plan.bike { background-color: var(--bike-color); }
         .training-plan.run { background-color: var(--run-color); }
-        .status-proposed { border: 2px dashed #fff; backdrop-filter: blur(2px); }
+        .status-proposed { border: 2px dashed #fff; }
         .status-confirmed { border: 2px solid #fff; }
 
-        /* Modal 樣式 */
+        /* RWD 自動適應邏輯 (螢幕寬度控制) */
+        /* 電腦 / 平板檢視 (螢幕寬度 >= 768px) */
+        @media (min-width: 768px) {
+            .mobile-only-header { display: none !important; }
+            .time-col { width: 10%; }
+            .day-col { display: table-cell !important; }
+        }
+
+        /* 手機直向檢視 (螢幕寬度 < 768px) */
+        @media (max-width: 767px) {
+            .desktop-only-header { display: none !important; }
+            .time-col { width: 22%; }
+            .day-col { display: none; }
+            .day-col.active-day { display: table-cell !important; }
+        }
+
+        /* Modal 彈窗 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;}
-        .modal { background: white; padding: 20px; border-radius: 8px; width: 320px; max-height: 80vh; overflow-y: auto; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
+        .modal { background: white; padding: 20px; border-radius: 8px; width: 85%; max-width: 320px; max-height: 80vh; overflow-y: auto; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
         .modal-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
         .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; font-size: 0.95rem;}
         .btn-swim { background: #3b82f6; } .btn-bike { background: #10b981; } .btn-run { background: #ef4444; }
         .btn-agree { background: #10b981; } .btn-disagree { background: #ef4444; } .btn-cancel { background: #9ca3af; }
         
-        .notification-item { padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 0.9rem;}
+        .notification-item { padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 0.85rem;}
         .notification-item.unread { background-color: #eff6ff; border-left: 4px solid #3b82f6;}
-        .notification-time { font-size: 0.7rem; color: #9ca3af; margin-top: 4px;}
+        .notification-time { font-size: 0.65rem; color: #9ca3af; margin-top: 4px;}
     </style>
 </head>
 <body>
 
-    <!-- 浮動 Toast 容器 -->
     <div id="toast-container"></div>
 
     <div class="header">
-        <h2>🏃‍♂️ 12/6 515 鐵人三項 - 訓練協調表</h2>
+        <h2 style="font-size: 1.2rem; margin: 5px 0;">🏃‍♂️️ 12/6 515 鐵人三項訓練協調表</h2>
         
         <div class="toolbar">
             <div class="user-info">
-                <span>👤 <span id="display-user" style="color: #2563eb; font-size: 1.1rem;"></span></span>
-                <span class="switch-user" onclick="switchUser()">[更換]</span>
+                <span>👤 <span id="display-user" style="color: #2563eb;"></span></span>
+                <span class="switch-user" onclick="switchUser()">[更換名字]</span>
             </div>
-            
-            <!-- 通知鈴鐺 -->
             <div class="bell-container" onclick="openNotifications()">
-                🔔
-                <span class="badge" id="noti-badge">0</span>
+                🔔<span class="badge" id="noti-badge">0</span>
             </div>
         </div>
         
-        <div class="stats" style="width: 100%; max-width: 1000px; justify-content: space-between;">
-            <div class="week-nav">
-                <button class="nav-btn" onclick="changeWeek(-1)">◀ 上週</button>
-                <span id="week-display" style="color: #374151;">第 4 週</span>
-                <button class="nav-btn" onclick="changeWeek(1)">下週 ▶</button>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <div class="stat-item stat-swim" id="stat-swim">🏊 0次 (0h)</div>
-                <div class="stat-item stat-bike" id="stat-bike">🚴 0次 (0h)</div>
-                <div class="stat-item stat-run" id="stat-run">🏃 0次 (0h)</div>
-            </div>
+        <!-- 統計數據 -->
+        <div class="stats">
+            <div class="stat-item stat-swim" id="stat-swim">🏊 0次(0h)</div>
+            <div class="stat-item stat-bike" id="stat-bike">🚴 0次(0h)</div>
+            <div class="stat-item stat-run" id="stat-run">🏃 0次(0h)</div>
+        </div>
+
+        <!-- 電腦版導覽 (切換週次) -->
+        <div class="nav-group desktop-only-header">
+            <button class="nav-btn" onclick="changeWeek(-1)">◀ 上一週</button>
+            <span id="desktop-week-title" style="font-size: 1rem; color: #1f2937;">第 4 週 (09/28 - 10/04)</span>
+            <button class="nav-btn" onclick="changeWeek(1)">下一週 ▶</button>
+        </div>
+
+        <!-- 手機版導覽 (切換單日) -->
+        <div class="nav-group mobile-only-header">
+            <button class="nav-btn" onclick="changeDay(-1)">◀ 前一天</button>
+            <span id="mobile-date-title" style="font-size: 0.95rem; color: #1f2937;">載入中...</span>
+            <button class="nav-btn" onclick="changeDay(1)">後一天 ▶</button>
         </div>
     </div>
 
@@ -117,21 +139,27 @@
             <thead>
                 <tr id="table-header">
                     <th class="time-col">時間</th>
-                    <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th style="color:#2563eb">六</th><th style="color:#ef4444">日</th>
+                    <th class="day-col" id="th-1">一</th>
+                    <th class="day-col" id="th-2">二</th>
+                    <th class="day-col" id="th-3">三</th>
+                    <th class="day-col" id="th-4">四</th>
+                    <th class="day-col" id="th-5">五</th>
+                    <th class="day-col" id="th-6" style="color:#2563eb">六</th>
+                    <th class="day-col" id="th-7" style="color:#ef4444">日</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
         </table>
     </div>
 
-    <!-- 動作模態框 (排課用) -->
+    <!-- 安排訓練 Modal -->
     <div class="modal-overlay" id="action-modal">
         <div class="modal">
-            <h3 id="modal-title">安排訓練</h3>
-            <p id="modal-desc" style="font-size: 0.9rem; color: #4b5563; margin-bottom: 5px;"></p>
-            <div id="duration-container" style="text-align: left; margin: 15px 0;">
-                <label style="font-size: 0.9rem; font-weight: bold; color: #374151;">⏱️ 預計訓練時長：</label>
-                <select id="plan-duration" style="width:100%; padding:8px; margin-top:5px; border-radius:6px;">
+            <h3 id="modal-title" style="margin-top:0; font-size: 1.1rem;">安排訓練</h3>
+            <p id="modal-desc" style="font-size: 0.85rem; color: #4b5563; margin-bottom: 5px;"></p>
+            <div id="duration-container" style="text-align: left; margin: 10px 0;">
+                <label style="font-size: 0.85rem; font-weight: bold; color: #374151;">⏱️ 預計訓練時長：</label>
+                <select id="plan-duration" style="width:100%; padding:8px; margin-top:5px; border-radius:6px; font-size: 0.9rem;">
                     <option value="1">1 小時</option><option value="1.5">1.5 小時</option><option value="2">2 小時</option>
                     <option value="2.5">2.5 小時</option><option value="3">3 小時</option><option value="4">4 小時</option>
                 </select>
@@ -140,21 +168,16 @@
         </div>
     </div>
 
-    <!-- 通知中心模態框 -->
+    <!-- 通知中心 Modal -->
     <div class="modal-overlay" id="noti-modal">
         <div class="modal">
-            <h3>🔔 通知中心</h3>
-            <div id="noti-list" style="max-height: 50vh; overflow-y: auto; margin-bottom: 15px;">
-                <!-- 通知內容由 JS 產生 -->
-            </div>
-            <button class="btn btn-cancel" style="width: 100%;" onclick="closeNotifications()">關閉並標為已讀</button>
+            <h3 style="margin-top:0; font-size: 1.1rem;">🔔 通知中心</h3>
+            <div id="noti-list" style="max-height: 40vh; overflow-y: auto; margin-bottom: 15px;"></div>
+            <button class="btn btn-cancel" style="width: 100%; padding:10px;" onclick="closeNotifications()">關閉並標為已讀</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 這裡已經換成你的 Firebase 設定
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB1IOZWLqlVq8LiqpGQEueZvK83qUkxl8Y",
             authDomain: "triathlon-515.firebaseapp.com",
@@ -165,17 +188,40 @@
             appId: "1:619065567667:web:620a10811b9d78ad5dc3c6",
             measurementId: "G-7XWG5650S7"
         };
-        // ==========================================
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let plans = {}; 
         let myNotifications = {};
         
-        const weekDates = { 4: "09/28 - 10/04", 5: "10/05 - 10/11", 6: "10/12 - 10/18", 7: "10/19 - 10/25", 8: "10/26 - 11/01", 9: "11/02 - 11/08", 10: "11/09 - 11/15", 11: "11/16 - 11/22", 12: "11/23 - 11/29", 13: "11/30 - 12/06" };
-        const courses = { 4: [[1, 8, 8, "教師節放假", "holiday"], [2, 8, 8, "模組4A區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [4, 10, 10, "社區醫學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "社區醫學", "course"], [5, 11, 11, "環境與職業醫學", "course"], [4, 13, 13, "新陳代謝", "course"], [5, 13, 13, "臨床診斷學", "course"], [4, 14, 14, "新陳代謝", "course"], [5, 14, 14, "臨床技能", "course"], [3, 15, 16, "呼吸學", "course"], [4, 15, 16, "新陳代謝", "course"], [5, 15, 15, "臨床技能", "course"]], 5: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 8, "國慶調整放假", "holiday"], [2, 10, 11, "呼吸學", "course"], [3, 10, 10, "新陳代謝", "course"], [3, 11, 11, "社區醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "呼吸學", "course"]], 6: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 9, "呼吸學", "course"], [3, 10, 11, "口腔醫學", "course"], [4, 10, 10, "臨床診斷學", "course"], [5, 10, 11, "臨床技能", "course"], [3, 13, 14, "急診醫學", "course"], [5, 13, 15, "臨床技能", "course"]], 7: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [5, 8, 9, "外科學概論", "course"], [1, 10, 11, "呼吸學", "course"], [3, 10, 11, "呼吸學", "course"], [4, 10, 10, "呼吸學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "新陳代謝", "course"], [5, 11, 11, "課程", "course"], [2, 13, 14, "呼吸學", "course"], [4, 13, 14, "預防醫學", "course"], [5, 13, 13, "核子醫學", "course"], [5, 14, 16, "新陳代謝", "course"], [2, 15, 16, "新陳代謝", "course"]], 8: [[1, 8, 8, "光復節放假", "holiday"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [4, 10, 11, "PBL", "course"], [5, 10, 11, "PBL", "course"], [4, 13, 14, "呼吸學", "course"], [2, 15, 16, "外科學概論", "course"], [4, 15, 16, "新陳代謝", "course"]], 9: [[1, 8, 8, "模組4B區段考試", "exam"], [5, 8, 9, "臨床診斷學", "course"], [2, 10, 11, "臨床營養學", "course"], [3, 10, 11, "消化學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "核子醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "臨床營養學", "course"], [5, 13, 14, "消化學", "course"], [5, 15, 16, "實驗診斷學", "course"]], 10: [[1, 8, 9, "PBL", "course"], [4, 8, 11, "口腔醫學", "course"], [5, 8, 9, "消化學", "course"], [2, 10, 11, "消化學", "course"], [3, 10, 11, "消化學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "環境與職業醫學", "course"], [2, 13, 14, "消化學", "course"], [3, 13, 14, "消化學", "course"], [4, 13, 14, "社區醫學", "course"], [5, 13, 13, "預防醫學", "course"], [5, 14, 16, "臨床技能", "course"], [3, 15, 16, "外科", "course"], [4, 15, 15, "社區醫學", "course"]], 11: [[2, 8, 9, "外科", "course"], [3, 8, 9, "外科", "course"], [4, 8, 9, "消化學", "course"], [5, 9, 9, "課程", "course"], [1, 10, 11, "臨床營養", "course"], [2, 10, 11, "臨床營養", "course"], [3, 10, 11, "急診", "course"], [4, 10, 11, "口腔", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "PBL", "course"], [2, 13, 14, "外科", "course"], [4, 13, 14, "臨床診斷", "course"], [5, 13, 17, "課程", "course"], [2, 15, 16, "消化學", "course"], [3, 15, 16, "消化學", "course"], [4, 15, 15, "臨床技能", "course"]], 12: [[4, 8, 8, "模組4C區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [1, 10, 11, "臨床營養學", "course"], [2, 10, 11, "臨床營養學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "核子醫學", "course"], [5, 13, 14, "課程", "course"], [5, 15, 16, "神經學", "course"], [5, 17, 17, "課程", "course"]], 13: [[1, 8, 11, "精神科學", "course"], [2, 8, 9, "臨床診斷學", "course"], [3, 8, 9, "精神科學", "course"], [4, 9, 10, "復健醫學", "course"], [5, 8, 9, "神經學", "course"], [2, 10, 11, "精神科學", "course"], [3, 10, 11, "神經學", "course"], [4, 11, 11, "環境與職業醫學", "course"], [5, 10, 11, "PBL", "course"], [2, 13, 14, "急診醫學", "course"], [3, 13, 14, "神經學", "course"], [4, 13, 14, "神經學", "course"], [5, 13, 14, "神經學", "course"], [2, 15, 16, "神經學", "course"], [3, 15, 16, "精神科學", "course"], [4, 15, 15, "預防醫學", "course"], [4, 16, 16, "課程", "course"]] };
+        const weeksData = {
+            4: { weekNum: 4, label: "第 4 週 (09/28 - 10/04)", dates: ["09/28 (一)", "09/29 (二)", "09/30 (三)", "10/01 (四)", "10/02 (五)", "10/03 (六)", "10/04 (日)"] },
+            5: { weekNum: 5, label: "第 5 週 (10/05 - 10/11)", dates: ["10/05 (一)", "10/06 (二)", "10/07 (三)", "10/08 (四)", "10/09 (五)", "10/10 (六)", "10/11 (日)"] },
+            6: { weekNum: 6, label: "第 6 週 (10/12 - 10/18)", dates: ["10/12 (一)", "10/13 (二)", "10/14 (三)", "10/15 (四)", "10/16 (五)", "10/17 (六)", "10/18 (日)"] },
+            7: { weekNum: 7, label: "第 7 週 (10/19 - 10/25)", dates: ["10/19 (一)", "10/20 (二)", "10/21 (三)", "10/22 (四)", "10/23 (五)", "10/24 (六)", "10/25 (日)"] },
+            8: { weekNum: 8, label: "第 8 週 (10/26 - 11/01)", dates: ["10/26 (一)", "10/27 (二)", "10/28 (三)", "10/29 (四)", "10/30 (五)", "10/31 (六)", "11/01 (日)"] },
+            9: { weekNum: 9, label: "第 9 週 (11/02 - 11/08)", dates: ["11/02 (一)", "11/03 (二)", "11/04 (三)", "11/05 (四)", "11/06 (五)", "11/07 (六)", "11/08 (日)"] },
+            10: { weekNum: 10, label: "第 10 週 (11/09 - 11/15)", dates: ["11/09 (一)", "11/10 (二)", "11/11 (三)", "11/12 (四)", "11/13 (五)", "11/14 (六)", "11/15 (日)"] },
+            11: { weekNum: 11, label: "第 11 週 (11/16 - 11/22)", dates: ["11/16 (一)", "11/17 (二)", "11/18 (三)", "11/19 (四)", "11/20 (五)", "11/21 (六)", "11/22 (日)"] },
+            12: { weekNum: 12, label: "第 12 週 (11/23 - 11/29)", dates: ["11/23 (一)", "11/24 (二)", "11/25 (三)", "11/26 (四)", "11/27 (五)", "11/28 (六)", "11/29 (日)"] },
+            13: { weekNum: 13, label: "第 13 週 (11/30 - 12/06)", dates: ["11/30 (一)", "12/01 (二)", "12/02 (三)", "12/03 (四)", "12/04 (五)", "12/05 (六)", "12/06 (日)"] }
+        };
+
+        const courses = { 
+            4: [[1, 8, 8, "教師節放假", "holiday"], [2, 8, 8, "模組4A區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [4, 10, 10, "社區醫學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "社區醫學", "course"], [5, 11, 11, "環境與職業醫學", "course"], [4, 13, 13, "新陳代謝", "course"], [5, 13, 13, "臨床診斷學", "course"], [4, 14, 14, "新陳代謝", "course"], [5, 14, 14, "臨床技能", "course"], [3, 15, 16, "呼吸學", "course"], [4, 15, 16, "新陳代謝", "course"], [5, 15, 15, "臨床技能", "course"]], 
+            5: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 8, "國慶調整放假", "holiday"], [2, 10, 11, "呼吸學", "course"], [3, 10, 10, "新陳代謝", "course"], [3, 11, 11, "社區醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "呼吸學", "course"]], 
+            6: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 9, "呼吸學", "course"], [3, 10, 11, "口腔醫學", "course"], [4, 10, 10, "臨床診斷學", "course"], [5, 10, 11, "臨床技能", "course"], [3, 13, 14, "急診醫學", "course"], [5, 13, 15, "臨床技能", "course"]], 
+            7: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [5, 8, 9, "外科學概論", "course"], [1, 10, 11, "呼吸學", "course"], [3, 10, 11, "呼吸學", "course"], [4, 10, 10, "呼吸學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "新陳代謝", "course"], [5, 11, 11, "課程", "course"], [2, 13, 14, "呼吸學", "course"], [4, 13, 14, "預防醫學", "course"], [5, 13, 13, "核子醫學", "course"], [5, 14, 16, "新陳代謝", "course"], [2, 15, 16, "新陳代謝", "course"]], 
+            8: [[1, 8, 8, "光復節放假", "holiday"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [4, 10, 11, "PBL", "course"], [5, 10, 11, "PBL", "course"], [4, 13, 14, "呼吸學", "course"], [2, 15, 16, "外科學概論", "course"], [4, 15, 16, "新陳代謝", "course"]], 
+            9: [[1, 8, 8, "模組4B區段考試", "exam"], [5, 8, 9, "臨床診斷學", "course"], [2, 10, 11, "臨床營養學", "course"], [3, 10, 11, "消化學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "核子醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "臨床營養學", "course"], [5, 13, 14, "消化學", "course"], [5, 15, 16, "實驗診斷學", "course"]], 
+            10: [[1, 8, 9, "PBL", "course"], [4, 8, 11, "口腔醫學", "course"], [5, 8, 9, "消化學", "course"], [2, 10, 11, "消化學", "course"], [3, 10, 11, "消化學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "環境與職業醫學", "course"], [2, 13, 14, "消化學", "course"], [3, 13, 14, "消化學", "course"], [4, 13, 14, "社區醫學", "course"], [5, 13, 13, "預防醫學", "course"], [5, 14, 16, "臨床技能", "course"], [3, 15, 16, "外科", "course"], [4, 15, 15, "社區醫學", "course"]], 
+            11: [[2, 8, 9, "外科", "course"], [3, 8, 9, "外科", "course"], [4, 8, 9, "消化學", "course"], [5, 9, 9, "課程", "course"], [1, 10, 11, "臨床營養", "course"], [2, 10, 11, "臨床營養", "course"], [3, 10, 11, "急診", "course"], [4, 10, 11, "口腔", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "PBL", "course"], [2, 13, 14, "外科", "course"], [4, 13, 14, "臨床診斷", "course"], [5, 13, 17, "課程", "course"], [2, 15, 16, "消化學", "course"], [3, 15, 16, "消化學", "course"], [4, 15, 15, "臨床技能", "course"]], 
+            12: [[4, 8, 8, "模組4C區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [1, 10, 11, "臨床營養學", "course"], [2, 10, 11, "臨床營養學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "核子醫學", "course"], [5, 13, 14, "課程", "course"], [5, 15, 16, "神經學", "course"], [5, 17, 17, "課程", "course"]], 
+            13: [[1, 8, 11, "精神科學", "course"], [2, 8, 9, "臨床診斷學", "course"], [3, 8, 9, "精神科學", "course"], [4, 9, 10, "復健醫學", "course"], [5, 8, 9, "神經學", "course"], [2, 10, 11, "精神科學", "course"], [3, 10, 11, "神經學", "course"], [4, 11, 11, "環境與職業醫學", "course"], [5, 10, 11, "PBL", "course"], [2, 13, 14, "急診醫學", "course"], [3, 13, 14, "神經學", "course"], [4, 13, 14, "神經學", "course"], [5, 13, 14, "神經學", "course"], [2, 15, 16, "神經學", "course"], [3, 15, 16, "精神科學", "course"], [4, 15, 15, "預防醫學", "course"], [4, 16, 16, "課程", "course"]] 
+        };
 
         let currentWeek = 4;
+        let currentDay = 1; // 1 = 星期一
         let currentUser = localStorage.getItem('triathlon_user') || "";
         if (!currentUser) {
             currentUser = prompt("歡迎來到訓練協調表！請輸入您的名字 (例如：小明)：") || "使用者";
@@ -184,20 +230,17 @@
         document.getElementById('display-user').innerText = currentUser;
 
         function init() {
-            // 1. 監聽課表變更
             db.ref('triathlon_plans').on('value', (snap) => {
                 plans = snap.val() || {};
                 renderTable(); 
                 updateStats();
             });
 
-            // 2. 監聽專屬於我的通知
             db.ref('notifications/' + currentUser).on('value', (snap) => {
                 myNotifications = snap.val() || {};
                 updateNotificationUI();
             });
             
-            // 3. 監聽是否有「新」通知寫入，觸發 Toast 浮動提示
             db.ref('notifications/' + currentUser).on('child_added', (snap) => {
                 const noti = snap.val();
                 if (noti.read === false && Date.now() - noti.timestamp < 5000) {
@@ -206,90 +249,46 @@
             });
         }
 
-        // --- 通知系統核心功能 ---
-        function sendNotification(targetUser, message) {
-            if (targetUser === currentUser || !targetUser) return; 
-            db.ref('notifications/' + targetUser).push({
-                message: message,
-                timestamp: Date.now(),
-                read: false
-            });
-        }
-
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000); 
-        }
-
-        function updateNotificationUI() {
-            let unreadCount = 0;
-            const notiList = document.getElementById('noti-list');
-            notiList.innerHTML = '';
-
-            const notiArray = Object.keys(myNotifications).map(k => ({id: k, ...myNotifications[k]}));
-            notiArray.sort((a, b) => b.timestamp - a.timestamp);
-
-            if (notiArray.length === 0) {
-                notiList.innerHTML = '<p style="color: #9ca3af;">目前沒有任何通知</p>';
-            }
-
-            notiArray.forEach(noti => {
-                if (!noti.read) unreadCount++;
-                let dateStr = new Date(noti.timestamp).toLocaleString('zh-TW', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'});
-                notiList.innerHTML += `
-                    <div class="notification-item ${noti.read ? '' : 'unread'}">
-                        <div>${noti.message}</div>
-                        <div class="notification-time">${dateStr}</div>
-                    </div>
-                `;
-            });
-
-            const badge = document.getElementById('noti-badge');
-            if (unreadCount > 0) {
-                badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        function openNotifications() {
-            document.getElementById('noti-modal').style.display = 'flex';
-        }
-
-        function closeNotifications() {
-            document.getElementById('noti-modal').style.display = 'none';
-            for (let key in myNotifications) {
-                if (!myNotifications[key].read) {
-                    db.ref(`notifications/${currentUser}/${key}`).update({ read: true });
-                }
-            }
-        }
-        // -------------------------
-
-        function switchUser() {
-            let newUser = prompt("請輸入您的名字：", currentUser);
-            if (newUser) {
-                currentUser = newUser;
-                localStorage.setItem('triathlon_user', currentUser);
-                window.location.reload(); 
-            }
-        }
-
         function changeWeek(delta) {
             let newWeek = currentWeek + delta;
             if (newWeek >= 4 && newWeek <= 13) {
                 currentWeek = newWeek;
-                document.getElementById('week-display').innerText = `第 ${currentWeek} 週`;
                 renderTable();
             }
         }
 
+        function changeDay(delta) {
+            currentDay += delta;
+            if (currentDay > 7) {
+                currentDay = 1;
+                if (currentWeek < 13) currentWeek++;
+            } else if (currentDay < 1) {
+                currentDay = 7;
+                if (currentWeek > 4) currentWeek--;
+            }
+            renderTable();
+        }
+
         function renderTable() {
+            const weekInfo = weeksData[currentWeek];
+            
+            // 更新標題
+            document.getElementById('desktop-week-title').innerText = weekInfo.label;
+            document.getElementById('mobile-date-title').innerText = `${weekInfo.label.split(' ')[0]} - ${weekInfo.dates[currentDay - 1]}`;
+
+            // 更新標頭中的全週日期
+            for (let d = 1; d <= 7; d++) {
+                const th = document.getElementById(`th-${d}`);
+                th.innerText = weekInfo.dates[d - 1];
+                
+                // 控制手機版時僅顯示目前選擇的日期欄位
+                if (d === currentDay) {
+                    th.classList.add('active-day');
+                } else {
+                    th.classList.remove('active-day');
+                }
+            }
+
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             
@@ -311,7 +310,7 @@
 
                 for (let day = 1; day <= 7; day++) {
                     const td = document.createElement('td');
-                    td.className = 'interactive';
+                    td.className = `interactive day-col ${day === currentDay ? 'active-day' : ''}`;
                     const key = `${currentWeek}_${day}_${time}`;
                     
                     if (day <= 5 && weekCourses[`${day}_${time}`]) {
@@ -326,7 +325,6 @@
                         const plan = plans[key];
                         const duration = plan.duration || 1; 
                         let div = document.createElement('div');
-                        
                         let typeIcon = plan.type === 'swim' ? '🏊' : (plan.type === 'bike' ? '🚴' : '🏃');
                         let typeName = plan.type === 'swim' ? '游泳' : (plan.type === 'bike' ? '騎車' : '跑步');
                         let statusText = plan.status === 'confirmed' ? '(已確認)' : `(待確認: ${plan.proposedBy})`;
@@ -353,15 +351,15 @@
                 if (plans[key].type === 'bike') { bCount++; bHour += dur; }
                 if (plans[key].type === 'run') { rCount++; rHour += dur; }
             }
-            document.getElementById('stat-swim').innerText = `🏊 ${sCount}次 (${sHour}h)`;
-            document.getElementById('stat-bike').innerText = `🚴 ${bCount}次 (${bHour}h)`;
-            document.getElementById('stat-run').innerText = `🏃 ${rCount}次 (${rHour}h)`;
+            document.getElementById('stat-swim').innerText = `🏊 ${sCount}次(${sHour}h)`;
+            document.getElementById('stat-bike').innerText = `🚴 ${bCount}次(${bHour}h)`;
+            document.getElementById('stat-run').innerText = `🏃 ${rCount}次(${rHour}h)`;
         }
 
         let currentTargetKey = null;
 
         function handleCellClick(day, time, existingPlan) {
-            const dayNames = ["", "一", "二", "三", "四", "五", "六", "日"];
+            const weekInfo = weeksData[currentWeek];
             currentTargetKey = `${currentWeek}_${day}_${time}`;
             const timeStr = `${time.toString().padStart(2, '0')}:00`;
             const modal = document.getElementById('action-modal');
@@ -369,14 +367,14 @@
             const desc = document.getElementById('modal-desc');
             
             if (!existingPlan) {
-                document.getElementById('modal-title').innerText = `安排訓練 (${dayNames[day]} ${timeStr})`;
+                document.getElementById('modal-title').innerText = `安排訓練 (${weekInfo.dates[day-1]} ${timeStr})`;
                 desc.innerText = "請選擇項目：";
                 document.getElementById('duration-container').style.display = 'block'; 
                 btns.innerHTML = `<button class="btn btn-swim" onclick="savePlan('swim', 'proposed')">🏊 安排游泳</button><button class="btn btn-bike" onclick="savePlan('bike', 'proposed')">🚴 安排騎車</button><button class="btn btn-run" onclick="savePlan('run', 'proposed')">🏃 安排跑步</button><button class="btn btn-cancel" onclick="closeModal('action-modal')">取消</button>`;
             } else {
                 document.getElementById('duration-container').style.display = 'none';
                 let dur = existingPlan.duration || 1;
-                document.getElementById('modal-title').innerText = `訓練協商 (${dayNames[day]} ${timeStr})`;
+                document.getElementById('modal-title').innerText = `訓練協商 (${timeStr})`;
                 
                 if (existingPlan.status === 'confirmed') {
                     desc.innerText = `已確認的訓練 (共 ${dur} 小時)。`;
@@ -410,9 +408,9 @@
 
             if (actionType === 'reject') {
                 sendNotification(targetUser, `${currentUser} ❌ 拒絕了你第 ${currentWeek} 週的 ${typeName} 提議。`);
-                alert("已拒絕。請在課表上點擊新時段重新發起提議！");
+                alert("已拒絕。請在畫面上點擊新時段重新發起提議！");
             } else if (actionType === 'cancel_confirmed' && confirm('確定要取消這個已經排好的訓練嗎？')) {
-                sendNotification(targetUser, `${currentUser} 取消了你們原本在第 ${currentWeek} 週確認好的 ${typeName} 訓練。`);
+                sendNotification(targetUser, `${currentUser} 取消了你們原本確認好的 ${typeName} 訓練。`);
             } else if (actionType === 'withdraw' && !confirm('確定要撤回提議嗎？')) {
                 return;
             }
@@ -421,9 +419,58 @@
             closeModal('action-modal');
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+        function sendNotification(targetUser, message) {
+            if (targetUser === currentUser || !targetUser) return; 
+            db.ref('notifications/' + targetUser).push({ message: message, timestamp: Date.now(), read: false });
         }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000); 
+        }
+
+        function updateNotificationUI() {
+            let unreadCount = 0;
+            const notiList = document.getElementById('noti-list');
+            notiList.innerHTML = '';
+            const notiArray = Object.keys(myNotifications).map(k => ({id: k, ...myNotifications[k]}));
+            notiArray.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (notiArray.length === 0) {
+                notiList.innerHTML = '<p style="color: #9ca3af;">目前沒有任何通知</p>';
+            }
+
+            notiArray.forEach(noti => {
+                if (!noti.read) unreadCount++;
+                let dateStr = new Date(noti.timestamp).toLocaleString('zh-TW', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                notiList.innerHTML += `<div class="notification-item ${noti.read ? '' : 'unread'}"><div>${noti.message}</div><div class="notification-time">${dateStr}</div></div>`;
+            });
+
+            const badge = document.getElementById('noti-badge');
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function openNotifications() { document.getElementById('noti-modal').style.display = 'flex'; }
+        function closeNotifications() {
+            document.getElementById('noti-modal').style.display = 'none';
+            for (let key in myNotifications) {
+                if (!myNotifications[key].read) db.ref(`notifications/${currentUser}/${key}`).update({ read: true });
+            }
+        }
+        function switchUser() {
+            let newUser = prompt("請輸入您的名字：", currentUser);
+            if (newUser) { currentUser = newUser; localStorage.setItem('triathlon_user', currentUser); window.location.reload(); }
+        }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
         init();
     </script>
