@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/6 515 鐵人三項訓練協調表 (當週統計版)</title>
+    <title>12/6 515 鐵人三項訓練協調表 (手機一週/單日點擊放大版)</title>
     
     <!-- 引入 Firebase 雲端資料庫 SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
@@ -21,7 +21,7 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 10px; color: #333; }
         
-        .header { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .header { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 12px; }
         .toolbar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1000px; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box;}
         
         /* 導覽列 */
@@ -48,7 +48,7 @@
         .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; overflow: hidden; padding-bottom: 20px;}
         table { width: 100%; border-collapse: collapse; table-layout: fixed;}
         th, td { border: 1px solid #e5e7eb; padding: 6px; text-align: center; vertical-align: top; }
-        th { background-color: #f9fafb; font-weight: 600; color: #4b5563; font-size: 0.9rem;}
+        th { background-color: #f9fafb; font-weight: 600; color: #4b5563; font-size: 0.85rem;}
         .time-col { background-color: #f9fafb; font-weight: bold; vertical-align: middle; font-size: 0.8rem;}
         
         td.interactive { cursor: pointer; height: 60px; position: relative; padding: 2px; box-sizing: border-box; }
@@ -66,18 +66,25 @@
         .status-proposed { border: 2px dashed #fff; }
         .status-confirmed { border: 2px solid #fff; }
 
-        /* RWD 自動適應邏輯 (螢幕寬度控制) */
+        /* 手機版放大控制關鍵 CSS */
         @media (min-width: 768px) {
-            .mobile-only-header { display: none !important; }
+            .mobile-back-btn { display: none !important; }
             .time-col { width: 10%; }
             .day-col { display: table-cell !important; }
+            .clickable-th { cursor: default; }
         }
 
         @media (max-width: 767px) {
-            .desktop-only-header { display: none !important; }
-            .time-col { width: 22%; }
-            .day-col { display: none; }
-            .day-col.active-day { display: table-cell !important; }
+            .clickable-th { cursor: pointer; background-color: #eff6ff; color: #2563eb; }
+            .clickable-th::after { content: " 🔍"; font-size: 0.7rem; }
+            th { padding: 8px 2px; font-size: 0.75rem; }
+            
+            /* 手機在「放大單日模式」時的顯示 */
+            body.mobile-zoom-mode .day-col { display: none; }
+            body.mobile-zoom-mode .day-col.active-day { display: table-cell !important; }
+            body.mobile-zoom-mode .time-col { width: 22%; }
+            body.mobile-zoom-mode .mobile-back-btn { display: inline-block !important; }
+            body.mobile-zoom-mode .clickable-th::after { content: ""; }
         }
 
         /* Modal 彈窗 */
@@ -117,18 +124,14 @@
             <div class="stat-item stat-run" id="stat-run">🏃 0次(0h)</div>
         </div>
 
-        <!-- 電腦版導覽 (切換週次) -->
-        <div class="nav-group desktop-only-header">
+        <!-- 導覽列 -->
+        <div class="nav-group">
             <button class="nav-btn" onclick="changeWeek(-1)">◀ 上一週</button>
-            <span id="desktop-week-title" style="font-size: 1rem; color: #1f2937;">第 4 週 (09/28 - 10/04)</span>
+            <div>
+                <span id="desktop-week-title" style="font-size: 0.95rem; color: #1f2937;">第 4 週</span>
+                <button class="nav-btn mobile-back-btn" style="display:none; margin-left: 8px; background: #3b82f6; color: white;" onclick="resetMobileView()">🔍 返回全週</button>
+            </div>
             <button class="nav-btn" onclick="changeWeek(1)">下一週 ▶</button>
-        </div>
-
-        <!-- 手機版導覽 (切換單日) -->
-        <div class="nav-group mobile-only-header">
-            <button class="nav-btn" onclick="changeDay(-1)">◀ 前一天</button>
-            <span id="mobile-date-title" style="font-size: 0.95rem; color: #1f2937;">載入中...</span>
-            <button class="nav-btn" onclick="changeDay(1)">後一天 ▶</button>
         </div>
     </div>
 
@@ -137,13 +140,13 @@
             <thead>
                 <tr id="table-header">
                     <th class="time-col">時間</th>
-                    <th class="day-col" id="th-1">一</th>
-                    <th class="day-col" id="th-2">二</th>
-                    <th class="day-col" id="th-3">三</th>
-                    <th class="day-col" id="th-4">四</th>
-                    <th class="day-col" id="th-5">五</th>
-                    <th class="day-col" id="th-6" style="color:#2563eb">六</th>
-                    <th class="day-col" id="th-7" style="color:#ef4444">日</th>
+                    <th class="day-col clickable-th" id="th-1" onclick="zoomDay(1)">一</th>
+                    <th class="day-col clickable-th" id="th-2" onclick="zoomDay(2)">二</th>
+                    <th class="day-col clickable-th" id="th-3" onclick="zoomDay(3)">三</th>
+                    <th class="day-col clickable-th" id="th-4" onclick="zoomDay(4)">四</th>
+                    <th class="day-col clickable-th" id="th-5" onclick="zoomDay(5)">五</th>
+                    <th class="day-col clickable-th" id="th-6" style="color:#2563eb" onclick="zoomDay(6)">六</th>
+                    <th class="day-col clickable-th" id="th-7" style="color:#ef4444" onclick="zoomDay(7)">日</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -156,7 +159,7 @@
             <h3 id="modal-title" style="margin-top:0; font-size: 1.1rem;">安排訓練</h3>
             <p id="modal-desc" style="font-size: 0.85rem; color: #4b5563; margin-bottom: 5px;"></p>
             <div id="duration-container" style="text-align: left; margin: 10px 0;">
-                <label style="font-size: 0.85rem; font-weight: bold; color: #374151;">⏱️ 預計訓練時長：</label>
+                <label style="font-size: 0.85rem; font-weight: bold; color: #374151;">⏱️️ 預計訓練時長：</label>
                 <select id="plan-duration" style="width:100%; padding:8px; margin-top:5px; border-radius:6px; font-size: 0.9rem;">
                     <option value="1">1 小時</option><option value="1.5">1.5 小時</option><option value="2">2 小時</option>
                     <option value="2.5">2.5 小時</option><option value="3">3 小時</option><option value="4">4 小時</option>
@@ -193,16 +196,16 @@
         let myNotifications = {};
         
         const weeksData = {
-            4: { weekNum: 4, label: "第 4 週 (09/28 - 10/04)", dates: ["09/28 (一)", "09/29 (二)", "09/30 (三)", "10/01 (四)", "10/02 (五)", "10/03 (六)", "10/04 (日)"] },
-            5: { weekNum: 5, label: "第 5 週 (10/05 - 10/11)", dates: ["10/05 (一)", "10/06 (二)", "10/07 (三)", "10/08 (四)", "10/09 (五)", "10/10 (六)", "10/11 (日)"] },
-            6: { weekNum: 6, label: "第 6 週 (10/12 - 10/18)", dates: ["10/12 (一)", "10/13 (二)", "10/14 (三)", "10/15 (四)", "10/16 (五)", "10/17 (六)", "10/18 (日)"] },
-            7: { weekNum: 7, label: "第 7 週 (10/19 - 10/25)", dates: ["10/19 (一)", "10/20 (二)", "10/21 (三)", "10/22 (四)", "10/23 (五)", "10/24 (六)", "10/25 (日)"] },
-            8: { weekNum: 8, label: "第 8 週 (10/26 - 11/01)", dates: ["10/26 (一)", "10/27 (二)", "10/28 (三)", "10/29 (四)", "10/30 (五)", "10/31 (六)", "11/01 (日)"] },
-            9: { weekNum: 9, label: "第 9 週 (11/02 - 11/08)", dates: ["11/02 (一)", "11/03 (二)", "11/04 (三)", "11/05 (四)", "11/06 (五)", "11/07 (六)", "11/08 (日)"] },
-            10: { weekNum: 10, label: "第 10 週 (11/09 - 11/15)", dates: ["11/09 (一)", "11/10 (二)", "11/11 (三)", "11/12 (四)", "11/13 (五)", "11/14 (六)", "11/15 (日)"] },
-            11: { weekNum: 11, label: "第 11 週 (11/16 - 11/22)", dates: ["11/16 (一)", "11/17 (二)", "11/18 (三)", "11/19 (四)", "11/20 (五)", "11/21 (六)", "11/22 (日)"] },
-            12: { weekNum: 12, label: "第 12 週 (11/23 - 11/29)", dates: ["11/23 (一)", "11/24 (二)", "11/25 (三)", "11/26 (四)", "11/27 (五)", "11/28 (六)", "11/29 (日)"] },
-            13: { weekNum: 13, label: "第 13 週 (11/30 - 12/06)", dates: ["11/30 (一)", "12/01 (二)", "12/02 (三)", "12/03 (四)", "12/04 (五)", "12/05 (六)", "12/06 (日)"] }
+            4: { weekNum: 4, label: "第 4 週 (09/28 - 10/04)", dates: ["09/28 一", "09/29 二", "09/30 三", "10/01 四", "10/02 五", "10/03 六", "10/04 日"] },
+            5: { weekNum: 5, label: "第 5 週 (10/05 - 10/11)", dates: ["10/05 一", "10/06 二", "10/07 三", "10/08 四", "10/09 五", "10/10 六", "10/11 日"] },
+            6: { weekNum: 6, label: "第 6 週 (10/12 - 10/18)", dates: ["10/12 一", "10/13 二", "10/14 三", "10/15 四", "10/16 五", "10/17 六", "10/18 日"] },
+            7: { weekNum: 7, label: "第 7 週 (10/19 - 10/25)", dates: ["10/19 一", "10/20 二", "10/21 三", "10/22 四", "10/23 五", "10/24 六", "10/25 日"] },
+            8: { weekNum: 8, label: "第 8 週 (10/26 - 11/01)", dates: ["10/26 一", "10/27 二", "10/28 三", "10/29 四", "10/30 五", "10/31 六", "11/01 日"] },
+            9: { weekNum: 9, label: "第 9 週 (11/02 - 11/08)", dates: ["11/02 一", "11/03 二", "11/04 三", "11/05 四", "11/06 五", "11/07 六", "11/08 日"] },
+            10: { weekNum: 10, label: "第 10 週 (11/09 - 11/15)", dates: ["11/09 一", "11/10 二", "11/11 三", "11/12 四", "11/13 五", "11/14 六", "11/15 日"] },
+            11: { weekNum: 11, label: "第 11 週 (11/16 - 11/22)", dates: ["11/16 一", "11/17 二", "11/18 三", "11/19 四", "11/20 五", "11/21 六", "11/22 日"] },
+            12: { weekNum: 12, label: "第 12 週 (11/23 - 11/29)", dates: ["11/23 一", "11/24 二", "11/25 三", "11/26 四", "11/27 五", "11/28 六", "11/29 日"] },
+            13: { weekNum: 13, label: "第 13 週 (11/30 - 12/06)", dates: ["11/30 一", "12/01 二", "12/02 三", "12/03 四", "12/04 五", "12/05 六", "12/06 日"] }
         };
 
         const courses = { 
@@ -219,7 +222,7 @@
         };
 
         let currentWeek = 4;
-        let currentDay = 1; // 1 = 星期一
+        let activeZoomDay = null; // 手機版放大的日期 (1~7)
         let currentUser = localStorage.getItem('triathlon_user') || "";
         if (!currentUser) {
             currentUser = prompt("歡迎來到訓練協調表！請輸入您的名字 (例如：小明)：") || "使用者";
@@ -247,38 +250,39 @@
             });
         }
 
+        // 手機版：點擊星期標題放大該天
+        function zoomDay(dayNum) {
+            if (window.innerWidth >= 768) return; // 電腦版點擊不放大
+            activeZoomDay = dayNum;
+            document.body.classList.add('mobile-zoom-mode');
+            renderTable();
+        }
+
+        // 重置手機檢視（返回一週總覽）
+        function resetMobileView() {
+            activeZoomDay = null;
+            document.body.classList.remove('mobile-zoom-mode');
+            renderTable();
+        }
+
         function changeWeek(delta) {
             let newWeek = currentWeek + delta;
             if (newWeek >= 4 && newWeek <= 13) {
                 currentWeek = newWeek;
                 renderTable();
-                updateStats(); // 切換週次時更新統計
+                updateStats();
             }
-        }
-
-        function changeDay(delta) {
-            currentDay += delta;
-            if (currentDay > 7) {
-                currentDay = 1;
-                if (currentWeek < 13) currentWeek++;
-            } else if (currentDay < 1) {
-                currentDay = 7;
-                if (currentWeek > 4) currentWeek--;
-            }
-            renderTable();
-            updateStats(); // 切換日期時同步更新統計
         }
 
         function renderTable() {
             const weekInfo = weeksData[currentWeek];
-            
             document.getElementById('desktop-week-title').innerText = weekInfo.label;
-            document.getElementById('mobile-date-title').innerText = `${weekInfo.label.split(' ')[0]} - ${weekInfo.dates[currentDay - 1]}`;
 
             for (let d = 1; d <= 7; d++) {
                 const th = document.getElementById(`th-${d}`);
                 th.innerText = weekInfo.dates[d - 1];
-                if (d === currentDay) {
+                
+                if (d === activeZoomDay) {
                     th.classList.add('active-day');
                 } else {
                     th.classList.remove('active-day');
@@ -306,7 +310,7 @@
 
                 for (let day = 1; day <= 7; day++) {
                     const td = document.createElement('td');
-                    td.className = `interactive day-col ${day === currentDay ? 'active-day' : ''}`;
+                    td.className = `interactive day-col ${day === activeZoomDay ? 'active-day' : ''}`;
                     const key = `${currentWeek}_${day}_${time}`;
                     
                     if (day <= 5 && weekCourses[`${day}_${time}`]) {
@@ -338,12 +342,9 @@
             }
         }
 
-        // 當週獨立統計邏輯
         function updateStats() {
             let sCount = 0, bCount = 0, rCount = 0;
             let sHour = 0, bHour = 0, rHour = 0;
-            
-            // 僅篩選 key 開頭為目前 currentWeek 的資料
             for (let key in plans) {
                 if (key.startsWith(`${currentWeek}_`)) {
                     let dur = plans[key].duration || 1;
