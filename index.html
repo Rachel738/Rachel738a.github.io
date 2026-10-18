@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>12/6 515 鐵人三項訓練協調表 (自動定位今天版)</title>
+    <title>12/6 515 鐵人三項訓練協調表 (週日自動跳下週版)</title>
     
     <!-- 引入 Firebase 雲端資料庫 SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
@@ -210,7 +210,7 @@
         const courses = { 
             4: [[1, 8, 8, "教師節放假", "holiday"], [2, 8, 8, "模組4A區段考試", "exam"], [5, 8, 9, "影像診斷學", "course"], [4, 10, 10, "社區醫學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "社區醫學", "course"], [5, 11, 11, "環境與職業醫學", "course"], [4, 13, 13, "新陳代謝", "course"], [5, 13, 13, "臨床診斷學", "course"], [4, 14, 14, "新陳代謝", "course"], [5, 14, 14, "臨床技能", "course"], [3, 15, 16, "呼吸學", "course"], [4, 15, 16, "新陳代謝", "course"], [5, 15, 15, "臨床技能", "course"]], 
             5: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 8, "國慶調整放假", "holiday"], [2, 10, 11, "呼吸學", "course"], [3, 10, 10, "新陳代謝", "course"], [3, 11, 11, "社區醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "呼吸學", "course"]], 
-            6: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 9, "呼吸學", "course"], [3, 10, 11, "口腔醫學", "course"], [4, 10, 10, "臨床診斷學", "course"], [5, 10, 11, "臨床技能", "course"], [3, 13, 14, "急診醫學", "course"], [5, 13, 15, "臨床技能", "course"]], 
+            6: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [5, 8, 9, "呼吸學", "course"], [4, 10, 11, "口腔醫學 期中考", "exam"], [4, 10, 10, "臨床診斷學", "course"], [5, 10, 11, "臨床技能", "course"], [3, 13, 14, "急診醫學", "course"], [5, 13, 15, "臨床技能", "course"]], 
             7: [[1, 8, 9, "PBL", "course"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [5, 8, 9, "外科學概論", "course"], [1, 10, 11, "呼吸學", "course"], [3, 10, 11, "呼吸學", "course"], [4, 10, 10, "呼吸學", "course"], [5, 10, 10, "PBL", "course"], [4, 11, 11, "新陳代謝", "course"], [5, 11, 11, "課程", "course"], [2, 13, 14, "呼吸學", "course"], [4, 13, 14, "預防醫學", "course"], [5, 13, 13, "核子醫學", "course"], [5, 14, 16, "新陳代謝", "course"], [2, 15, 16, "新陳代謝", "course"]], 
             8: [[1, 8, 8, "光復節放假", "holiday"], [3, 8, 9, "新陳代謝", "course"], [4, 8, 9, "呼吸學", "course"], [4, 10, 11, "PBL", "course"], [5, 10, 11, "PBL", "course"], [4, 13, 14, "呼吸學", "course"], [2, 15, 16, "外科學概論", "course"], [4, 15, 16, "新陳代謝", "course"]], 
             9: [[1, 8, 8, "模組4B區段考試", "exam"], [5, 8, 9, "臨床診斷學", "course"], [2, 10, 11, "臨床營養學", "course"], [3, 10, 11, "消化學", "course"], [5, 10, 10, "PBL", "course"], [5, 11, 11, "核子醫學", "course"], [2, 13, 15, "人類遺傳學", "course"], [3, 13, 14, "臨床營養學", "course"], [5, 13, 14, "消化學", "course"], [5, 15, 16, "實驗診斷學", "course"]], 
@@ -230,29 +230,36 @@
         }
         document.getElementById('display-user').innerText = currentUser;
 
-        // 自動比對今天日期並定位到該週與該天
+        // 自動比對今天日期並定位（週日會自動翻到下一個星期）
         function autoDetectCurrentWeekAndDay() {
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${yyyy}-${mm}-${dd}`;
+            let checkDate = new Date(today);
+            let dayOfWeek = today.getDay(); // 0 是星期日, 1~6 是星期一至星期六
+
+            // 🌟 關鍵邏輯：若今天恰好是「星期日」，自動算入「下一個星期一」所在的週次！
+            if (dayOfWeek === 0) {
+                checkDate.setDate(today.getDate() + 1); // 加上 1 天，代表切換至下週一
+                activeZoomDay = 1; // 放大頁面預設歸位在下週一
+            } else {
+                activeZoomDay = dayOfWeek;
+            }
+
+            const yyyy = checkDate.getFullYear();
+            const mm = String(checkDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(checkDate.getDate()).padStart(2, '0');
+            const targetDateStr = `${yyyy}-${mm}-${dd}`;
             
-            // 找出今天的週次
+            // 比對目標日期落在第幾週
             for (let w in weeksData) {
-                if (todayStr >= weeksData[w].start && todayStr <= weeksData[w].end) {
+                if (targetDateStr >= weeksData[w].start && targetDateStr <= weeksData[w].end) {
                     currentWeek = parseInt(w);
                     break;
                 }
             }
-
-            // 找出今天是星期幾 (0是週日, 1-6是週一至週六 -> 轉為 1~7)
-            let dayOfWeek = today.getDay();
-            activeZoomDay = dayOfWeek === 0 ? 7 : dayOfWeek;
         }
 
         function init() {
-            autoDetectCurrentWeekAndDay(); // 自動定位今天的週次與星期
+            autoDetectCurrentWeekAndDay(); // 啟動自動判定（含週日自動下週機制）
 
             db.ref('triathlon_plans').on('value', (snap) => {
                 plans = snap.val() || {};
